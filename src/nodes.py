@@ -1,21 +1,24 @@
-from redis.config import redis as redis_client
-from datetime import datetime, timedelta
+from src.redis.config import redis as redis_client
+from datetime import datetime, timezone, timedelta
 import time
-
+import json
 
 class Nodes:
 
-    def check_email(self, state):
+    def check_message(self, state):
 
-        print("# Checking for new emails")
+        print("## Checking for new messages")
 
         all_messages = redis_client.lrange("messages", 0, -1)
 
-        now = datetime.now(datetime.timezone.utc)
-        cutoff_time = now - timedelta(hours=24)
+        all_messages = [json.loads(msg) for msg in all_messages]
+
+        now = datetime.now(timezone.utc)
+        
+        cutoff_time = now - timedelta(minutes=5)
 
         recent_messages = [
-            item for item in all_messages if item["timestamp"] > cutoff_time
+            item for item in all_messages
         ]
 
         checked_messages = (
